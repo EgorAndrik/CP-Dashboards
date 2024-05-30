@@ -1,0 +1,69 @@
+version: '3'
+
+services:
+  api:
+    build:
+      context: api
+      target: dev
+    image: cp_api_dev
+    command: conda run --no-capture-output -n cenv flask --app flaskr run --debug --host=10.5.1.10 --port=80
+    user: 1000:1000
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 3
+        window: 60s
+    networks:
+      cp_dho:
+        ipv4_address: 10.5.1.10
+    ports:
+      - 8090:80
+    env_file:
+      - .api.env
+    working_dir: /api
+    volumes:
+      - ./api:/api
+
+  api_uwsgi:
+    build:
+      context: api
+      target: prod
+
+    networks:
+      cp_dho:
+        ipv4_address: 10.5.1.11
+    ports: 
+      - 443:443
+      - 47485:80
+    env_file:
+      - .api.env
+    volumes:
+      - ./crt:/crt
+
+
+
+  nginx:
+    build:
+      context: nginx
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 5
+        window: 60s
+    networks:
+      cp_dho:
+        ipv4_address: 10.5.1.80
+    depends_on:
+      - api_uwsgi
+    ports:
+      - 8080:80
+
+networks:
+  cp_dho:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+
