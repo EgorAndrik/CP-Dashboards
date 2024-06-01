@@ -192,7 +192,8 @@ class DataPreprocessing:
 
         rate_subpolygons['result_score'] = rate_subpolygons['mileage_deviation_score'] * 0.4 + rate_subpolygons['subpolygon_cars_score'] * 0.3 + rate_subpolygons['penalty_score'] * 0.15 + rate_subpolygons['driving_style_score'] * 0.15
 
-        rate_subpolygons
+        rate_subpolygons = rate_subpolygons.reset_index()
+        return rate_subpolygons
 
 
 
