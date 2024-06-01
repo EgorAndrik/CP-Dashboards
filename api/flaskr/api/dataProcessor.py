@@ -91,6 +91,12 @@ class RawDataPreprocessing:
 
         df = df[['leader'] + list(df.drop(columns='leader').columns)]
 
+        df = df[~(df.date_list.isna() & df.date_telematics.isna() & (~df.leader))]
+
+
+        df['penalty'] = df['penalty'].fillna(1.)
+        df.loc[df['penalty'] == 0, 'penalty'] = 1.
+
         return df
 
 class DataPreprocessing:
@@ -175,7 +181,7 @@ class DataPreprocessing:
         """
         df = self.data
         rate_subpolygons_group = df[df.leader == True].groupby('subpolygon')
-        rate_subpolygons = self.get_polygons_rate(rate_subpolygons_group).drop(columns=['result_score'])
+        rate_subpolygons = self.get_polygons_rate(rate_subpolygons_group)
         data_init_stract = self.exchangeToSubpolygons(df)
 
         rate_subpolygons = rate_subpolygons.join(data_init_stract.rename(columns={'res': 'subpolygon_cars_deviation'})[['subpolygon_cars_deviation']])
@@ -219,7 +225,56 @@ class DataPreprocessing:
 
         return poldate_data
 
+    def telematics_leaked_stats(self):
+        """
+            Allows to collect data about abnormals in telematics data (when telematics is None).
+            This data allows do determine whether the telematics device is not used or the driver has
+            not completed the quest. 
 
+            @return has_telematics, no_telematics. Has telematics dataframe corresponds for drivers
+            that had had the telematics device but the it was broken or the driver did not complain
+            the quest.
+        """
+        df = self.data
+
+        # Если в списках дата есть, а в телематике нет - либо сломана телематика, либо никто не поехал на задание
+        telematics_leak_state = (df.leader == False) & (df.date_telematics.isna())
+        telematics_unleak_state = (df.leader == False) & (~df.date_telematics.isna())
+        telematics_leak = df[telematics_leak_state]
+        telematics_unleak = df[telematics_unleak_state]
+
+
+        telematics_leak_group = telematics_leak[['subpolygon', 'id', 'leader', 'penalty']].groupby(['subpolygon', 'id'])
+        telematics_leak_idxs = telematics_leak_group[['leader']].count().rename(columns={'leader': 'count'})
+        telematics_leak_idxs = telematics_leak_idxs.join(telematics_leak_group[['penalty']].sum())
+
+        telematics_unleak_group = telematics_unleak[['subpolygon', 'id', 'leader', 'penalty']].groupby(['subpolygon', 'id'])
+        telematics_unleak_idxs = telematics_unleak_group[['leader']].count().rename(columns={'leader': 'count'})
+        telematics_unleak_idxs = telematics_unleak_idxs.join(telematics_unleak_group[['penalty']].sum())
+
+        has_telematics_idxs = np.intersect1d(telematics_leak_idxs.index, telematics_unleak_idxs.index)
+        has_telematics = telematics_leak_idxs.loc[has_telematics_idxs].join(telematics_unleak_idxs.loc[has_telematics_idxs], lsuffix='_leaked', rsuffix='_fixed')
+        no_telematics = telematics_leak_idxs[~telematics_leak_idxs.index.isin(has_telematics_idxs)]
+
+        return has_telematics, no_telematics
+
+    def car_list_leaked_state(self):
+        """
+            Allows to collect statistics about abnormals in list data corresponding to telematics data.
+            When this situation occures the cars lists has been lost or the driver has used the car
+            without the quest (in self interests).
+        """
+        df = self.data
+        # Если данные есть в телематике, но нет в листе, водитель использовал машину в своих интересах или списки были утеряны.
+        list_leak_state = (df.leader == False) & (df['date_list'].isna())
+
+        list_leak = df[list_leak_state]
+        list_leak_group = list_leak.groupby(['subpolygon', 'id'])
+
+        list_leak_view = list_leak_group[['leader']].count()
+        list_leak_view = list_leak_view.join(list_leak_group[['mileage_telematics', 'penalty']].sum())
+
+        return list_leak_view
 
 
     
