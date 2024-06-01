@@ -254,6 +254,25 @@ class DataPreprocessing:
         has_telematics = telematics_leak_idxs.loc[has_telematics_idxs].join(telematics_unleak_idxs.loc[has_telematics_idxs], lsuffix='_leaked', rsuffix='_fixed')
         no_telematics = telematics_leak_idxs[~telematics_leak_idxs.index.isin(has_telematics_idxs)]
 
+
+        adf = df[~df.leader].set_index(['subpolygon', 'id']).loc[has_telematics_idxs].reset_index()
+        adf_max_teledate = adf[~adf.date_telematics.isna()].groupby(['subpolygon', 'id'])[['date_list']].max().rename(columns={'date_list': 'max_teledate'})
+        adf_min_nateledate = adf[adf.date_telematics.isna()].groupby(['subpolygon', 'id'])[['date_list']].min().rename(columns={'date_list': 'min_nateledate'})
+
+        adf_teledate = adf_max_teledate.join(adf_min_nateledate)
+
+
+        adf_teledate['probably_broken'] = adf_teledate['max_teledate'] <= adf_teledate['min_nateledate']
+        has_telematics = has_telematics.join(adf_teledate)
+        has_telematics['penalty_leaked'] -= has_telematics['count_leaked']
+        has_telematics['penalty_fixed'] -= has_telematics['count_fixed']
+
+        has_telematics['importance_score'] = has_telematics['count_leaked'] + has_telematics['penalty_leaked']*4 + (~has_telematics['probably_broken']) * 50
+        has_telematics = has_telematics.sort_values('importance_score', ascending=False)
+
+        no_telematics = no_telematics.sort_values('count', ascending=False)
+        no_telematics['count'] = no_telematics['count'].astype(np.int32)
+
         return has_telematics, no_telematics
 
     def car_list_leaked_state(self):
@@ -269,7 +288,9 @@ class DataPreprocessing:
         list_leak = df[list_leak_state]
         list_leak_group = list_leak.groupby(['subpolygon', 'id'])
 
-        list_leak_view = list_leak_group[['leader']].count()
+        list_leak_view = list_leak_group[['leader']].count().rename(columns={'leader': 'count'})
         list_leak_view = list_leak_view.join(list_leak_group[['mileage_telematics', 'penalty']].sum())
+
+        list_leak_view = list_leak_view.sort_values('mileage_telematics', ascending=False)
 
         return list_leak_view
