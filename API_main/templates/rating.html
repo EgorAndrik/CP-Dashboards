@@ -16,21 +16,30 @@
         <header class="main_header">
             <nav>
                 <!-- <img src="https://polotnos.cdnbro.com/posts/859707-rzhd-logotip-24.jpg  " alt="" style="width: 100px;"> -->
-                <a href="#home">Главная</a>
-                <a href="#">Прогнозирования</a>
+                <a href="/">Главная</a>
+                <a href="/dop_rating">Детализированный отчёт полигов</a>
             </nav>
         </header>
         <div class="main_bars">
-            <h1>Добро пожаловать, загрузите файл!</h1>
+            <h1>Основная информауия о полигонах</h1>
             <div class="main_inf">
-                <!-- глистограмма рейтинга -->
-                <canvas id="main_raiting" width="160" height="120"></canvas>
-                
-                <canvas id="sub_raiting" width="160" height="130"></canvas>
-                <!-- Круговая диограма -->
-                <canvas id="pie_chart" width="160" height="160"></canvas>
-                <!-- Более детальная визуализация -->
-                <canvas id="pie_chart" width="120" height="120" class="hidden"></canvas>
+                <div class="chart-row">
+                    <div class="chart-container">
+                        <canvas id="main_raiting" width="160" height="160"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sub_raiting" width="160" height="160"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="pie_chart" width="160" height="160"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="rating_footer">
+            <div class="h2_buttons">
+                <h2>Детальная информация о каждом полигоне</h2>
             </div>
             <div class="first_buttons">
                 <button class="first_but">Московская ЖД</button>
@@ -39,20 +48,39 @@
                 <button class="first_but">Горьковская ЖД</button>
                 <button class="first_but">Северная ЖД</button>
             </div>
-    
-        </div>
-        <footer>
-            <h2 class="footer_h">Made by Clio</h2>
         </footer>
     </section>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Ваш JavaScript код для построения графиков
-        // Например:
-        var labels = ['Категория 1', 'Категория 2', 'Категория 3', 'Категория 4', 'Категория 5'];
-        var values = [30, 20, 30, 40, 50];
+        // Получаем данные из шаблона
+        var labels = {{ labels_polyg | tojson }};
+        var values = {{ values_polyg | tojson }};
 
-        var ctx1 = document.getElementById('main_raiting');
+        // Создаем массив объектов для сортировки
+        var data = labels.map((label, index) => ({
+            label: label,
+            value: values[index]
+        }));
+
+        // Сортируем данные по значению, перемещая NaN в конец
+        data.sort((a, b) => {
+            if (isNaN(a.value) && isNaN(b.value)) {
+                return 0;
+            } else if (isNaN(a.value)) {
+                return 1;
+            } else if (isNaN(b.value)) {
+                return -1;
+            } else {
+                return b.value - a.value;
+            }
+        });
+
+        // Разделяем данные обратно на массивы labels и values
+        labels = data.map(item => item.label);
+        values = data.map(item => item.value);
+
+        // Построение графиков
+        var ctx1 = document.getElementById('main_raiting').getContext('2d');
         new Chart(ctx1, {
             type: 'bar',
             data: {
@@ -67,17 +95,38 @@
             },
             options: {
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
-                    }]
+                    y: {
+                        beginAtZero: true
+                    }
                 }
             }
         });
 
-        var labels2 = ['Категория 1', 'Категория 2', 'Категория 3', 'Категория 4', 'Категория 5'];
-        var values2 = [10, 40, 30, 40, 50];
+        var labels2 = {{ labels_subpolygons | tojson }};
+        var values2 = {{ values_subpolygons | tojson }};
+        
+        // Создаем массив объектов для сортировки
+        var data = labels2.map((label, index) => ({
+            label: label,
+            value: values2[index]
+        }));
+
+        // Сортируем данные по значению, перемещая NaN в конец
+        data.sort((a, b) => {
+            if (isNaN(a.value) && isNaN(b.value)) {
+                return 0;
+            } else if (isNaN(a.value)) {
+                return 1;
+            } else if (isNaN(b.value)) {
+                return -1;
+            } else {
+                return b.value - a.value;
+            }
+        });
+
+        // Разделяем данные обратно на массивы labels и values
+        labels2 = data.map(item => item.label);
+        values2 = data.map(item => item.value);
 
         var ctx2 = document.getElementById('sub_raiting');
         new Chart(ctx2, {
