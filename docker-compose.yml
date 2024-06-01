@@ -30,6 +30,18 @@ services:
       context: api
       target: prod
 
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 3
+        window: 60s
+    
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
     networks:
       cp_dho:
         ipv4_address: 10.5.1.11
