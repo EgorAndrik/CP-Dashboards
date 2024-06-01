@@ -65,14 +65,33 @@ else:
 def main_page():
     return render_template('index.html')
 
+
 @application.route('/dop_rating')
 def dop_rating():
-    return render_template('dop_rating.html')
+    global rdp, dp
+    if rdp == 0 and dp == 0:
+        rdp = RawDataPreprocessing(get_list_of_files(upload_folder)[0])
+        dp = DataPreprocessing(rdp.getData())
+    return render_template(
+        'dop_rating.html',
+        labels_mileage_deviation_score=dp.rate_by_polygons()['polygon'].tolist(),
+        values_mileage_deviation_score=dp.rate_by_polygons()['mileage_deviation_score'].tolist(),
+
+        labels_driving_style_score=dp.rate_by_polygons()['polygon'].tolist(),
+        values_driving_style_score=dp.rate_by_polygons()['driving_style_score'].tolist(),
+        
+        labels_penalty_score=dp.rate_by_polygons()['polygon'].tolist(),
+        values_penalty_score=dp.rate_by_polygons()['penalty_score'].tolist()
+        )
+
 
 @application.route('/rating')
 def rating():
-    rdp = RawDataPreprocessing(get_list_of_files(upload_folder)[0])
-    dp = DataPreprocessing(rdp.getData())
+    global rdp, dp
+
+    if rdp == 0 and dp == 0:
+        rdp = RawDataPreprocessing(get_list_of_files(upload_folder)[0])
+        dp = DataPreprocessing(rdp.getData())
     return render_template(
         'rating.html',
         labels_polyg=dp.rate_by_polygons()['polygon'].tolist(),
@@ -81,9 +100,11 @@ def rating():
         values_subpolygons=dp.rate_by_subpolygons()['result_score'].tolist()
         )
 
+
 @application.route('/setData', methods=['POST'])
 def uploadDataUser():
-    global rdp 
+    global rdp, dp
+
     file = request.files['file']
     if not len(file.filename.split('.')[0]):
         return 'No selected file'

@@ -52,17 +52,14 @@
     </section>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Получаем данные из шаблона
         var labels = {{ labels_polyg | tojson }};
         var values = {{ values_polyg | tojson }};
 
-        // Создаем массив объектов для сортировки
         var data = labels.map((label, index) => ({
             label: label,
             value: values[index]
         }));
 
-        // Сортируем данные по значению, перемещая NaN в конец
         data.sort((a, b) => {
             if (isNaN(a.value) && isNaN(b.value)) {
                 return 0;
@@ -75,11 +72,9 @@
             }
         });
 
-        // Разделяем данные обратно на массивы labels и values
         labels = data.map(item => item.label);
         values = data.map(item => item.value);
 
-        // Построение графиков
         var ctx1 = document.getElementById('main_raiting').getContext('2d');
         new Chart(ctx1, {
             type: 'bar',
@@ -105,13 +100,11 @@
         var labels2 = {{ labels_subpolygons | tojson }};
         var values2 = {{ values_subpolygons | tojson }};
         
-        // Создаем массив объектов для сортировки
         var data = labels2.map((label, index) => ({
             label: label,
             value: values2[index]
         }));
 
-        // Сортируем данные по значению, перемещая NaN в конец
         data.sort((a, b) => {
             if (isNaN(a.value) && isNaN(b.value)) {
                 return 0;
@@ -124,7 +117,6 @@
             }
         });
 
-        // Разделяем данные обратно на массивы labels и values
         labels2 = data.map(item => item.label);
         values2 = data.map(item => item.value);
 

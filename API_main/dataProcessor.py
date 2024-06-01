@@ -110,7 +110,7 @@ class DataPreprocessing:
         self.data = data
 
     @staticmethod 
-    def get_polygons_rate(df_group) -> pd.DataFrame:
+    def get_polygons_rate(df_group: pd.DataFrame) -> pd.DataFrame:
         """
             Rates massive structures such as polygons or subpolygons.
             @param df_group Data grouped by polygon of subpolygon. 
