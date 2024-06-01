@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RZD</title>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+    <link rel="stylesheet" href="\static\style\styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+</head>
+<body>
+    
+    <section class="rating">
+        <header class="main_header">
+            <nav>
+                <!-- <img src="https://polotnos.cdnbro.com/posts/859707-rzhd-logotip-24.jpg  " alt="" style="width: 100px;"> -->
+                <a href="/">Главная</a>
+                <a href="/dop_rating">Детализированный отчёт полигов</a>
+            </nav>
+        </header>
+        <h2>Внимание! В процессе анализа обнаружены следующие недочёты:</h2>
+        <ul class="notifications">
+            <h4>В следующих сценариях возможна как поломка устройства считывания телематики, так и невыполнение водителем указанного плана.
+                События отсортированы в порядке убывания важности.
+            </h4>
+            <br />
+            {% for k, v in notifications_telematics_leaked_work.items() %}
+            	<li>
+                    <p>На подразделении {{k[0]}} и машине с номером {{k[1]}}</p>
+                    <p>Наблюдалось {{v['count_leaked']}} проездов без телематики на {{v['count_fixed']}} проездов с ней.</p>
+                    {% if v['probably_broken'] %}
+                    <p>
+                        Устройство телематики оценено как возможно сломанное.
+                    </p>
+                    {% else %}
+                    <p style="color: red">Устройство телематики оценено как рабочее</p>
+                    {% endif %}
+                    <p></p>
+                </li>
+                <br />
+
+            {% endfor %}
+            {% for k, v in notifications_telematics_leaked_broken.items() %}
+            	<li>
+                    <p>На подразделении {{k[0]}} и машине с номером {{k[1]}}</p>
+                    <p>Наблюдалось {{v['count']}} проездов без телематики</p>
+                    <p style="color: green">
+                        Устройство телематики оценено как сломанное.
+                    </p>
+                </li>
+                <br />
+
+            {% endfor %}
+        </ul>
+        <ul class="notifications">
+            <h4>В следующих сценариях наблюдались случаи проезда по устройству телематики, но без записи в списках.
+                Тогда либо списки могли быть утеряны, либо транспорт был использован без оффициального соглашения.
+            </h4>
+            <br />
+            {% for k, v in list_leaked_views.items() %}
+            	<li>
+                    <p>На подразделении {{k[0]}} и машине с номером {{k[1]}}</p>
+                    <p>Наблюдалось {{v['count']}} несанкционированных проездов с общим километражом {{v['mileage_telematics']}}</p>
+                </li>
+                <br />
+            {% endfor %}
+
+        </ul>
+        <div class="main_bars">
+            <h1>Основная информауия о полигонах</h1>
+            <div class="main_inf">
+                <div class="chart-row">
+                    <div class="chart-container">
+                        <canvas id="main_raiting" width="160" height="160"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sub_raiting" width="160" height="160"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="pie_chart" width="160" height="160"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="rating_footer">
+            <div class="h2_buttons">
+                <h2>Детальная информация о каждом полигоне</h2>
+            </div>
+            <div class="first_buttons">
+                <button class="first_but">Московская ЖД</button>
+                <button class="first_but">Калининградская ЖД</button>
+                <button class="first_but">Октябрьская ЖД</button>
+                <button class="first_but">Горьковская ЖД</button>
+                <button class="first_but">Северная ЖД</button>
+            </div>
+        </footer>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var labels = {{ labels_polyg | tojson }};
+        var values = {{ values_polyg | tojson }};
+
+        var data = labels.map((label, index) => ({
+            label: label,
+            value: values[index]
+        }));
+
+        data.sort((a, b) => {
+            if (isNaN(a.value) && isNaN(b.value)) {
+                return 0;
+            } else if (isNaN(a.value)) {
+                return 1;
+            } else if (isNaN(b.value)) {
+                return -1;
+            } else {
+                return b.value - a.value;
+            }
+        });
+
+        labels = data.map(item => item.label);
+        values = data.map(item => item.value);
+
+        var ctx1 = document.getElementById('main_raiting').getContext('2d');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Рейтинг полигонов',
+                    data: values,
+                    backgroundColor: 'rgba(75, 192, 192)',
+                    borderColor: 'rgba(75, 192, 192)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        var labels2 = {{ labels_subpolygons | tojson }};
+        var values2 = {{ values_subpolygons | tojson }};
+        
+        var data = labels2.map((label, index) => ({
+            label: label,
+            value: values2[index]
+        }));
+
+        data.sort((a, b) => {
+            if (isNaN(a.value) && isNaN(b.value)) {
+                return 0;
+            } else if (isNaN(a.value)) {
+                return 1;
+            } else if (isNaN(b.value)) {
+                return -1;
+            } else {
+                return b.value - a.value;
+            }
+        });
+
+        labels2 = data.map(item => item.label);
+        values2 = data.map(item => item.value);
+
+        var ctx2 = document.getElementById('sub_raiting');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: labels2,
+                datasets: [{
+                    label: 'Рейтинг структурных подразделений',
+                    data: values2,
+                    backgroundColor: 'rgba(75, 192, 192)',
+                    borderColor: 'rgba(75, 192, 192)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+
+        // круговая
+        var pieLabels = ['Красный', 'Синий', 'Желтый', 'Зеленый', 'Фиолетовый'];
+        var pieData = [12, 19, 3, 5, 2];
+
+        var ctx2 = document.getElementById('pie_chart').getContext('2d');
+        var pie_chart = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    label: 'Количество транспорта по каждому полигону',
+                    data: pieData,
+                    backgroundColor: [
+                        'rgba(255, 99, 132)',
+                        'rgba(54, 162, 235)',
+                        'rgba(255, 206, 86)',
+                        'rgba(75, 192, 192)',
+                        'rgba(153, 102, 255)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132)',
+                        'rgba(54, 162, 235)',
+                        'rgba(255, 206, 86)',
+                        'rgba(75, 192, 192)',
+                        'rgba(153, 102, 255)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
