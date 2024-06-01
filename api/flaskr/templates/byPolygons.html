@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RZD</title>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+    <link rel="stylesheet" href="\static\style\styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+</head>
+<body>
+    
+    <section class="rating">
+        <header class="main_header">
+            <nav>
+                <!-- <img src="https://polotnos.cdnbro.com/posts/859707-rzhd-logotip-24.jpg  " alt="" style="width: 100px;"> -->
+                <a href="/">Загрузить новый файл</a>
+                <a href="/rating">Общий отчёт</a>
+            </nav>
+        </header>
+		
+        <div class="main_bars">
+			<h1>{{structure['polygonName']}}</h1>
+			<p>Данный полигон состоит из следующих подполигонов:</p>
+			<ul>
+				{% for subpolygon in structure['subpolygons'] %}
+					<li>{{subpolygon}}</li>
+				{% endfor %}
+			</ul>
+        </div>
+		<div class="main_bars">
+            <h1>Рейтинг полигонов по штрафам, манере вождения и путям</h1>
+                <!-- Вторая строка графиков -->
+                <div class="dop_raiting_bars">
+                    <div class="chart-container">
+                        <canvas id="sub1_raiting" width="120" height="120"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sub2_raiting" width="120" height="120"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sub3_raiting" width="120" height="120"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <h2>Внимание! В процессе анализа обнаружены следующие недочёты:</h2>
+        <ul class="notifications">
+            <h4>В следующих сценариях возможна как поломка устройства считывания телематики, так и невыполнение водителем указанного плана.
+                События отсортированы в порядке убывания важности.
+            </h4>
+            <br />
+            {% for k, v in structure['notifications_telematics_leaked_work'].items() %}
+            	<li>
+                    <p>На подразделении {{k[0]}} и машине с номером {{k[1]}}</p>
+                    <p>Наблюдалось {{v['count_leaked']}} проездов без телематики на {{v['count_fixed']}} проездов с ней.</p>
+                    {% if v['probably_broken'] %}
+                    <p>
+                        Устройство телематики оценено как возможно сломанное.
+                    </p>
+                    {% else %}
+                    <p style="color: red">Устройство телематики оценено как рабочее</p>
+                    {% endif %}
+                    <p></p>
+                </li>
+                <br />
+
+            {% endfor %}
+            {% for k, v in structure['notifications_telematics_leaked_broken'].items() %}
+            	<li>
+                    <p>На подразделении {{k[0]}} и машине с номером {{k[1]}}</p>
+                    <p>Наблюдалось {{v['count']}} проездов без телематики</p>
+                    <p style="color: green">
+                        Устройство телематики оценено как сломанное.
+                    </p>
+                </li>
+                <br />
+
+            {% endfor %}
+        </ul>
+        <ul class="notifications">
+            <h4>В следующих сценариях наблюдались случаи проезда по устройству телематики, но без записи в списках.
+                Тогда либо списки могли быть утеряны, либо транспорт был использован без оффициального соглашения.
+            </h4>
+            <br />
+            {% for k, v in structure['list_leaked_views'].items() %}
+            	<li>
+                    <p>На подразделении {{k[0]}} и машине с номером {{k[1]}}</p>
+                    <p>Наблюдалось {{v['count']}} несанкционированных проездов с общим километражом {{v['mileage_telematics']}}</p>
+                </li>
+                <br />
+            {% endfor %}
+
+        </ul>
+        <footer class="rating_footer">
+            <div class="h2_buttons">
+                <h2>Детальная информация о каждом полигоне</h2>
+            </div>
+            <div class="first_buttons">
+                {% for polyg in labels_polyg %}
+                    <a class="first_but" href="/byPolygons?polygon={{polyg}}">{{polyg}}</a>
+                {% endfor %}
+            </div>
+        </footer>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        
+    </script>
+</body>
+</html>

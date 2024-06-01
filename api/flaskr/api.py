@@ -86,7 +86,7 @@ def rating():
 
     telematics_leaked_work, telematics_leaked_broken = dp.telematics_leaked_stats()
     list_leaked_views = dp.car_list_leaked_state()
-    
+
     return render_template(
         'rating.html',
         notifications_telematics_leaked_work = telematics_leaked_work.transpose().to_dict(),
@@ -96,8 +96,21 @@ def rating():
         labels_polyg=dp.rate_by_polygons()['polygon'].tolist(),
         values_polyg=dp.rate_by_polygons()['result_score'].tolist(),
         labels_subpolygons=dp.rate_by_subpolygons()['subpolygon'].tolist(),
-        values_subpolygons=dp.rate_by_subpolygons()['result_score'].tolist()
+        values_subpolygons=dp.rate_by_subpolygons()['result_score'].tolist(),
         )
+
+@application.route('/byPolygons', methods=['GET'])
+def getByPolygons():
+    global rdp, dp
+
+    polygonName = request.args.get('polygon')
+
+    print(dp.get_polyg(polygonName))
+
+    return render_template("byPolygons.html",
+                            structure=dp.get_polyg(polygonName),
+                          labels_polyg=dp.rate_by_polygons()['polygon'].tolist(),
+                           )
 
 
 @application.route('/setData', methods=['POST'])

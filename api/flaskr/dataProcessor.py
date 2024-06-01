@@ -174,11 +174,16 @@ class DataPreprocessing:
 
         return data_init_stract
 
-    def rate_by_subpolygons(self) -> pd.DataFrame:
+    def rate_by_subpolygons(self, polygon=None) -> pd.DataFrame:
         """
             Rates subpolygons. 
+            If polygon is None score will be calculated over all polygons.
         """
         df = self.data
+
+        if polygon is not None:
+            df = df.set_index('polygon').loc[polygon].reset_index()
+
         rate_subpolygons_group = df[df.leader == True].groupby('subpolygon')
         rate_subpolygons = self.get_polygons_rate(rate_subpolygons_group)
         data_init_stract = self.exchangeToSubpolygons(df)
@@ -193,6 +198,25 @@ class DataPreprocessing:
 
         rate_subpolygons = rate_subpolygons.reset_index()
         return rate_subpolygons
+    
+    def get_polyg(self, polyg_name: str)->dict:
+        """
+            Returns polygon structure 
+        """
+
+        telematics_leaked_work, telematics_leaked_broken = self.telematics_leaked_stats(polyg_name)
+        list_leaked_views = self.car_list_leaked_state(polyg_name)
+
+        structure = {
+            'polygonName': polyg_name,
+            'subpolygons': self.data.set_index('polygon').loc[polyg_name]['subpolygon'].drop_duplicates().tolist(),
+            'subpolygonsRating': self.rate_by_subpolygons(polyg_name).set_index('subpolygon').transpose().to_dict(),
+            'notifications_telematics_leaked_work':  telematics_leaked_work.transpose().to_dict(),
+            'notifications_telematics_leaked_broken':  telematics_leaked_broken.transpose().to_dict(),
+            'list_leaked_views': list_leaked_views.transpose().to_dict(),
+        }
+
+        return structure
 
     @staticmethod
     def collect_groups_by_date(df: pd.DataFrame) -> pd.DataFrame:
@@ -223,7 +247,7 @@ class DataPreprocessing:
 
         return poldate_data
 
-    def telematics_leaked_stats(self):
+    def telematics_leaked_stats(self, polyg_name = None):
         """
             Allows to collect data about abnormals in telematics data (when telematics is None).
             This data allows do determine whether the telematics device is not used or the driver has
@@ -234,6 +258,9 @@ class DataPreprocessing:
             the quest.
         """
         df = self.data
+
+        if polyg_name is not None:
+            df = df.set_index('polygon').loc[polyg_name].reset_index()
 
         # Если в списках дата есть, а в телематике нет - либо сломана телематика, либо никто не поехал на задание
         telematics_leak_state = (df.leader == False) & (df.date_telematics.isna())
@@ -275,13 +302,18 @@ class DataPreprocessing:
 
         return has_telematics, no_telematics
 
-    def car_list_leaked_state(self):
+    def car_list_leaked_state(self, polyg_name=None):
         """
             Allows to collect statistics about abnormals in list data corresponding to telematics data.
             When this situation occures the cars lists has been lost or the driver has used the car
             without the quest (in self interests).
         """
         df = self.data
+
+        if polyg_name is not None:
+            df = df.set_index('polygon').loc[polyg_name].reset_index()
+
+
         # Если данные есть в телематике, но нет в листе, водитель использовал машину в своих интересах или списки были утеряны.
         list_leak_state = (df.leader == False) & (df['date_list'].isna())
 

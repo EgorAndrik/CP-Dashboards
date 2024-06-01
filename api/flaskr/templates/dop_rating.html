@@ -42,11 +42,9 @@
                 <h2>Детальная информация о каждом полигоне</h2>
             </div>
             <div class="first_buttons">
-                <button class="first_but">Московская ЖД</button>
-                <button class="first_but">Калининградская ЖД</button>
-                <button class="first_but">Октябрьская ЖД</button>
-                <button class="first_but">Горьковская ЖД</button>
-                <button class="first_but">Северная ЖД</button>
+                {% for polyg in labels_polyg %}
+                    <a class="first_but" href="/byPolygons?polygon={{polyg}}">{{polyg}}</a>
+                {% endfor %}
             </div>
         </footer>
     </section>
