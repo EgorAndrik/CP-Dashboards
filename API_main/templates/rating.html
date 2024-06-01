@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RZD</title>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+    <link rel="stylesheet" href="\static\style\styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+</head>
+<body>
+    
+    <section class="rating">
+        <header class="main_header">
+            <nav>
+                <!-- <img src="https://polotnos.cdnbro.com/posts/859707-rzhd-logotip-24.jpg  " alt="" style="width: 100px;"> -->
+                <a href="#home">Главная</a>
+                <a href="#">Прогнозирования</a>
+            </nav>
+        </header>
+        <div class="main_bars">
+            <h1>Добро пожаловать, загрузите файл!</h1>
+            <div class="main_inf">
+                <!-- глистограмма рейтинга -->
+                <canvas id="main_raiting" width="160" height="120"></canvas>
+                
+                <canvas id="sub_raiting" width="160" height="130"></canvas>
+                <!-- Круговая диограма -->
+                <canvas id="pie_chart" width="160" height="160"></canvas>
+                <!-- Более детальная визуализация -->
+                <canvas id="pie_chart" width="120" height="120" class="hidden"></canvas>
+            </div>
+            <div class="first_buttons">
+                <button class="first_but">Московская ЖД</button>
+                <button class="first_but">Калининградская ЖД</button>
+                <button class="first_but">Октябрьская ЖД</button>
+                <button class="first_but">Горьковская ЖД</button>
+                <button class="first_but">Северная ЖД</button>
+            </div>
+    
+        </div>
+        <footer>
+            <h2 class="footer_h">Made by Clio</h2>
+        </footer>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Ваш JavaScript код для построения графиков
+        // Например:
+        var labels = ['Категория 1', 'Категория 2', 'Категория 3', 'Категория 4', 'Категория 5'];
+        var values = [30, 20, 30, 40, 50];
+
+        var ctx1 = document.getElementById('main_raiting');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Рейтинг полигонов',
+                    data: values,
+                    backgroundColor: 'rgba(75, 192, 192)',
+                    borderColor: 'rgba(75, 192, 192)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+
+        var labels2 = ['Категория 1', 'Категория 2', 'Категория 3', 'Категория 4', 'Категория 5'];
+        var values2 = [10, 40, 30, 40, 50];
+
+        var ctx2 = document.getElementById('sub_raiting');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: labels2,
+                datasets: [{
+                    label: 'Рейтинг структурных подразделений',
+                    data: values2,
+                    backgroundColor: 'rgba(75, 192, 192)',
+                    borderColor: 'rgba(75, 192, 192)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+
+        // круговая
+        var pieLabels = ['Красный', 'Синий', 'Желтый', 'Зеленый', 'Фиолетовый'];
+        var pieData = [12, 19, 3, 5, 2];
+
+        var ctx2 = document.getElementById('pie_chart').getContext('2d');
+        var pie_chart = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    label: 'Количество транспорта по каждому полигону',
+                    data: pieData,
+                    backgroundColor: [
+                        'rgba(255, 99, 132)',
+                        'rgba(54, 162, 235)',
+                        'rgba(255, 206, 86)',
+                        'rgba(75, 192, 192)',
+                        'rgba(153, 102, 255)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132)',
+                        'rgba(54, 162, 235)',
+                        'rgba(255, 206, 86)',
+                        'rgba(75, 192, 192)',
+                        'rgba(153, 102, 255)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
