@@ -210,7 +210,7 @@ class DataPreprocessing:
         structure = {
             'polygonName': polyg_name,
             'subpolygons': self.data.set_index('polygon').loc[polyg_name]['subpolygon'].drop_duplicates().tolist(),
-            'subpolygonsRating': self.rate_by_subpolygons(polyg_name).set_index('subpolygon').transpose().to_dict(),
+            'subpolygonsRating': self.rate_by_subpolygons(polyg_name).set_index('subpolygon').reset_index(),
             'notifications_telematics_leaked_work':  telematics_leaked_work.transpose().to_dict(),
             'notifications_telematics_leaked_broken':  telematics_leaked_broken.transpose().to_dict(),
             'list_leaked_views': list_leaked_views.transpose().to_dict(),

@@ -105,11 +105,20 @@ def getByPolygons():
 
     polygonName = request.args.get('polygon')
 
-    print(dp.get_polyg(polygonName))
+    print(dp.get_polyg(polygonName)['subpolygonsRating'].columns)
 
     return render_template("byPolygons.html",
-                            structure=dp.get_polyg(polygonName),
-                          labels_polyg=dp.rate_by_polygons()['polygon'].tolist(),
+                           structure=dp.get_polyg(polygonName),
+                           labels_polyg=dp.rate_by_polygons()['polygon'].tolist(),
+
+                           labels_driving_style_score=dp.get_polyg(polygonName)['subpolygonsRating']['subpolygon'].tolist(),
+                           values_driving_style_score=dp.get_polyg(polygonName)['subpolygonsRating']['driving_style_score'].tolist(),
+
+                           labels_penalty_score=dp.get_polyg(polygonName)['subpolygonsRating']['subpolygon'].tolist(),
+                           values_penalty_score=dp.get_polyg(polygonName)['subpolygonsRating']['penalty_score'].tolist(),
+                           
+                           labels_mileage_deviation_score=dp.get_polyg(polygonName)['subpolygonsRating']['subpolygon'].tolist(),
+                           values_mileage_deviation_score=dp.get_polyg(polygonName)['subpolygonsRating']['mileage_deviation_score'].tolist()
                            )
 
 

@@ -108,7 +108,155 @@
     </section>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        
+        var labels1 = {{ labels_mileage_deviation_score | tojson }};
+        var values1 = {{ values_mileage_deviation_score | tojson }};
+
+        // Создаем массив объектов для сортировки
+        var data = labels1.map((label, index) => ({
+            label: label,
+            value: values1[index]
+        }));
+
+        // Сортируем данные по значению, перемещая NaN в конец
+        data.sort((a, b) => {
+            if (isNaN(a.value) && isNaN(b.value)) {
+                return 0;
+            } else if (isNaN(a.value)) {
+                return 1;
+            } else if (isNaN(b.value)) {
+                return -1;
+            } else {
+                return b.value - a.value;
+            }
+        });
+
+        // Разделяем данные обратно на массивы labels и values
+        labels1 = data.map(item => item.label);
+        values1 = data.map(item => item.value);
+
+        var ctx1 = document.getElementById('sub1_raiting');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: labels1,
+                datasets: [{
+                    label: 'Рейтинг полигонов по пробегу',
+                    data: values1,
+                    backgroundColor: 'rgba(75, 192, 192)',
+                    borderColor: 'rgba(75, 192, 192)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+
+        var labels2 = {{ labels_driving_style_score | tojson }};
+        var values2 = {{ values_driving_style_score | tojson }};
+
+        // Создаем массив объектов для сортировки
+        var data = labels2.map((label, index) => ({
+            label: label,
+            value: values2[index]
+        }));
+
+        // Сортируем данные по значению, перемещая NaN в конец
+        data.sort((a, b) => {
+            if (isNaN(a.value) && isNaN(b.value)) {
+                return 0;
+            } else if (isNaN(a.value)) {
+                return 1;
+            } else if (isNaN(b.value)) {
+                return -1;
+            } else {
+                return b.value - a.value;
+            }
+        });
+
+        // Разделяем данные обратно на массивы labels и values
+        labels2 = data.map(item => item.label);
+        values2 = data.map(item => item.value);
+
+        var ctx2 = document.getElementById('sub2_raiting');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: labels2,
+                datasets: [{
+                    label: 'Рейтинг полигонов по стилю езды',
+                    data: values2,
+                    backgroundColor: 'rgba(75, 192, 192)',
+                    borderColor: 'rgba(75, 192, 192)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+
+        var labels3 = {{ labels_penalty_score | tojson }};
+        var values3 = {{ values_penalty_score | tojson }};
+
+        // Создаем массив объектов для сортировки
+        var data = labels3.map((label, index) => ({
+            label: label,
+            value: values3[index]
+        }));
+
+        // Сортируем данные по значению, перемещая NaN в конец
+        data.sort((a, b) => {
+            if (isNaN(a.value) && isNaN(b.value)) {
+                return 0;
+            } else if (isNaN(a.value)) {
+                return 1;
+            } else if (isNaN(b.value)) {
+                return -1;
+            } else {
+                return b.value - a.value;
+            }
+        });
+
+        // Разделяем данные обратно на массивы labels и values
+        labels3 = data.map(item => item.label);
+        values3 = data.map(item => item.value);
+
+        var ctx3 = document.getElementById('sub3_raiting');
+        new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: labels3,
+                datasets: [{
+                    label: 'Рейтинг полигонов по штрафам',
+                    data: values3,
+                    backgroundColor: 'rgba(75, 192, 192)',
+                    borderColor: 'rgba(75, 192, 192)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
     </script>
 </body>
 </html>
