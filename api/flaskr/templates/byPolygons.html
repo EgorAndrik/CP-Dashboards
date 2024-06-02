@@ -35,13 +35,13 @@
                 <!-- Вторая строка графиков -->
                 <div class="dop_raiting_bars">
                     <div class="chart-container">
-                        <canvas id="sub1_raiting" width="120" height="120"></canvas>
+                        <canvas id="sub1_raiting" width="160" height="160"></canvas>
                     </div>
                     <div class="chart-container">
-                        <canvas id="sub2_raiting" width="120" height="120"></canvas>
+                        <canvas id="sub2_raiting" width="160" height="160"></canvas>
                     </div>
                     <div class="chart-container">
-                        <canvas id="sub3_raiting" width="120" height="120"></canvas>
+                        <canvas id="sub3_raiting" width="160" height="160"></canvas>
                     </div>
                 </div>
             </div>  
@@ -323,7 +323,7 @@
                     }
                 }
             });
-
+        
         var labels1 = {{ labels_mileage_deviation_score | tojson }};
         var values1 = {{ values_mileage_deviation_score | tojson }};
 
@@ -349,6 +349,10 @@
         // Разделяем данные обратно на массивы labels и values
         labels1 = data.map(item => item.label);
         values1 = data.map(item => item.value);
+        
+        for(let i = 0; i < labels1.length; i++) {
+            labels1[i] = labels1[i].slice(0, 20)
+        }
 
         var ctx1 = document.getElementById('sub1_raiting');
         new Chart(ctx1, {
@@ -377,6 +381,8 @@
         var labels2 = {{ labels_driving_style_score | tojson }};
         var values2 = {{ values_driving_style_score | tojson }};
 
+
+
         // Создаем массив объектов для сортировки
         var data = labels2.map((label, index) => ({
             label: label,
@@ -399,6 +405,10 @@
         // Разделяем данные обратно на массивы labels и values
         labels2 = data.map(item => item.label);
         values2 = data.map(item => item.value);
+
+        for(let i = 0; i < labels2.length; i++) {
+            labels2[i] = labels2[i].slice(0, 20)
+        }
 
         var ctx2 = document.getElementById('sub2_raiting');
         new Chart(ctx2, {
@@ -449,6 +459,10 @@
         // Разделяем данные обратно на массивы labels и values
         labels3 = data.map(item => item.label);
         values3 = data.map(item => item.value);
+
+        for(let i = 0; i < labels3.length; i++) {
+            labels3[i] = labels3[i].slice(0, 20)
+        }
 
         var ctx3 = document.getElementById('sub3_raiting');
         new Chart(ctx3, {
