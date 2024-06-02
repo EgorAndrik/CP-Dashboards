@@ -109,7 +109,9 @@ def getByPolygons():
 
     polygonName = request.args.get('polygon')
 
-    print(dp.get_polyg(polygonName)['subpolygonsRating'].columns)
+    deviation_graphs = dp.stats_by_date()
+
+    agg_1 = deviation_graphs.loc[polygonName]
 
     return render_template("byPolygons.html",
                            structure=dp.get_polyg(polygonName),
@@ -122,7 +124,9 @@ def getByPolygons():
                            values_penalty_score=dp.get_polyg(polygonName)['subpolygonsRating']['penalty_score'].tolist(),
                            
                            labels_mileage_deviation_score=dp.get_polyg(polygonName)['subpolygonsRating']['subpolygon'].tolist(),
-                           values_mileage_deviation_score=dp.get_polyg(polygonName)['subpolygonsRating']['mileage_deviation_score'].tolist()
+                           values_mileage_deviation_score=dp.get_polyg(polygonName)['subpolygonsRating']['mileage_deviation_score'].tolist(),
+
+                           deviation_graphs = agg_1
                            )
 
 
