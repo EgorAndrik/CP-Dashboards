@@ -204,7 +204,6 @@ class DataPreprocessing:
         """
             Returns polygon structure 
         """
-
         telematics_leaked_work, telematics_leaked_broken = self.telematics_leaked_stats(polyg_name)
         list_leaked_views = self.car_list_leaked_state(polyg_name)
 
@@ -363,3 +362,7 @@ class DataPreprocessing:
 
         return result
 
+<<<<<<< HEAD:api/flaskr/dataProcessor.py
+=======
+    
+>>>>>>> main:api/flaskr/api/dataProcessor.py
