@@ -107,7 +107,10 @@ def rating():
 def getByPolygons():
     global rdp, dp
 
+
     polygonName = request.args.get('polygon')
+    if polygonName == 'ДВОСТ ДМ':
+        return redirect('/rating')
 
     deviation_graphs = dp.stats_by_date()
 

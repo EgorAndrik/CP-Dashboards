@@ -361,8 +361,3 @@ class DataPreprocessing:
         result.reset_index(drop=True, inplace=True)
 
         return result
-
-<<<<<<< HEAD:api/flaskr/dataProcessor.py
-=======
-    
->>>>>>> main:api/flaskr/api/dataProcessor.py
