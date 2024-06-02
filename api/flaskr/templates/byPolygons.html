@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RZD</title>
+    <link rel="stylesheet" href="\static\style\styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+    <script src="/static/script/chart.js"></script>
+</head>
+<body>
+    
+    <section class="rating">
+        <header class="main_header">
+            <nav>
+                <!-- <img src="https://polotnos.cdnbro.com/posts/859707-rzhd-logotip-24.jpg  " alt="" style="width: 100px;"> -->
+                <a href="/">Загрузить новый файл</a>
+                <a href="/rating">Общий отчёт</a>
+            </nav>
+        </header>
+		
+        <div class="main_bars">
+			<h1>{{structure['polygonName']}}</h1>
+			<p>Данный полигон состоит из следующих подполигонов:</p>
+			<ul>
+				{% for subpolygon in structure['subpolygons'] %}
+					<li>{{subpolygon}}</li>
+				{% endfor %}
+			</ul>
+        </div>
+		<div class="main_bars">
+            <h1>Рейтинг полигонов по штрафам, манере вождения и путям</h1>
+                <!-- Вторая строка графиков -->
+                <div class="dop_raiting_bars">
+                    <div class="chart-container">
+                        <canvas id="sub1_raiting" width="160" height="160"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sub2_raiting" width="160" height="160"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="sub3_raiting" width="160" height="160"></canvas>
+                    </div>
+                </div>
+            </div>  
+
+        </div>
+        <div class="error_bars">
+            <h1>Отклонения данных</h1>
+                <!-- Вторая строка графиков -->
+                <div class="error_container">
+                    <div class="chart-container">
+                        <canvas id="erorrs1" width="120" height="120"></canvas>
+                        <canvas id="graph_erorrs1" width="120" height="120"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="erorrs2" width="120" height="120"></canvas>
+                        <canvas id="graph_erorrs2" width="120" height="120"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="erorrs3" width="120" height="120"></canvas>
+                        <canvas id="graph_erorrs3" width="120" height="120"></canvas>
+                    </div>
+                </div>
+            </div>  
+            
+        </div>
+        <h2  class='waring_info'>Внимание! В процессе анализа обнаружены следующие недочёты:</h2>
+
+        <button id="announcementsToggler"  class="click_notif">Нажмите, чтобы показать/скрыть</button>
+
+        <div id = "announcements" class='hidden'>
+            <ul class="notifications">
+                <h4 class="waring_info" style="font-size:20px">В следующих сценариях возможна как поломка устройства считывания телематики, так и невыполнение водителем указанного плана.
+                    События отсортированы в порядке убывания важности.
+                </h4>
+                <br />
+                {% for k, v in structure['notifications_telematics_leaked_work'].items() %}
+                    <li>
+                        <p>На подразделении {{k[0]}} и машине с номером {{k[1]}}</p>
+                        <p>Наблюдалось {{v['count_leaked']}} проездов без телематики на {{v['count_fixed']}} проездов с ней.</p>
+                        {% if v['probably_broken'] %}
+                        <p>
+                            Устройство телематики оценено как возможно сломанное.
+                        </p>
+                        {% else %}
+                        <p style="color: red">Устройство телематики оценено как рабочее</p>
+                        {% endif %}
+                        <p></p>
+                    </li>
+                    <br />
+
+                {% endfor %}
+                {% for k, v in structure['notifications_telematics_leaked_broken'].items() %}
+                    <li>
+                        <p>На подразделении {{k[0]}} и машине с номером {{k[1]}}</p>
+                        <p>Наблюдалось {{v['count']}} проездов без телематики</p>
+                        <p style="color: green">
+                            Устройство телематики оценено как сломанное.
+                        </p>
+                    </li>
+                    <br />
+
+                {% endfor %}
+            </ul>
+            <ul class="notifications">
+                <h4  class="waring_info" style="font-size:20px">В следующих сценариях наблюдались случаи проезда по устройству телематики, но без записи в списках.
+                    Тогда либо списки могли быть утеряны, либо транспорт был использован без оффициального соглашения.
+                </h4>
+                <br />
+                {% for k, v in structure['list_leaked_views'].items() %}
+                    <li>
+                        <p>На подразделении {{k[0]}} и машине с номером {{k[1]}}</p>
+                        <p>Наблюдалось {{v['count']}} несанкционированных проездов с общим километражом {{v['mileage_telematics']}}</p>
+                    </li>
+                    <br />
+                {% endfor %}
+
+            </ul>
+        </div>
+        <footer class="rating_footer">
+            <div class="h2_buttons">
+                <h2>Детальная информация о каждом полигоне</h2>
+            </div>
+            <div class="first_buttons">
+                {% for polyg in labels_polyg %}
+                    <a class="first_but" href="/byPolygons?polygon={{polyg}}">{{polyg}}</a>
+                {% endfor %}
+            </div>
+        </footer>
+    </section>
+    <script>
+        announcementsButton = document.getElementById('announcementsToggler')
+
+        announcementsButton.onclick = function() {
+            document.getElementById('announcements').classList.toggle('hidden')
+        }
+
+        // data
+
+        var x = {{ deviation_graphs_targets | tojson}}
+        var y1_milege = {{ deviation_graphs_mileage_list_list | tojson}}
+        var y2_milege = {{ deviation_graphs_mileage_telematics_list | tojson}}
+
+        var y1_list = {{ deviation_graphs_driving_style_list | tojson}}
+        var y2_list = {{ deviation_graphs_driving_style_telematics | tojson}}
+
+        var y1_penalty= {{ deviation_graphs_penalty_list | tojson}}
+        var y2_penalty = {{ deviation_graphs_penalty_telematics | tojson}}
+
+        // errors
+
+        var y1_milleage_error = {{ deviation_graphs_mileage_error_list | tojson}}
+
+        var y1_driving_style_error = {{ deviation_graphs_driving_style_error | tojson}}
+
+        var y1_penalty = {{ deviation_graphs_penalty_error | tojson}} 
+
+
+        const expenses1 = document.getElementById('erorrs1');
+            new Chart(expenses1, {
+                type: 'line',
+                data: {
+                    labels: x,
+                    datasets: [{
+                        label: 'Пробег по спискам',
+                        data: y1_milege,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(226, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }, {
+                        label: 'Пробег по телематики',
+                        data: y2_milege,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(50, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }
+                ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const error_graph1 = document.getElementById('graph_erorrs1');
+            new Chart(error_graph1, {
+                type: 'line',
+                data: {
+                    labels: x,
+                    datasets: [{
+                        label: 'Квадратичная ошибка',
+                        data: y1_milleage_error,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(226, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }
+                ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const expenses2 = document.getElementById('erorrs2');
+            new Chart(expenses2, {
+                type: 'line',
+                data: {
+                    labels: x,
+                    datasets: [{
+                        label: 'Манера вождения по спискам',
+                        data: y1_list,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(226, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }, {
+                        label: 'Манера вождения по телематики',
+                        data: y2_list,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(50, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }
+                ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const error_graph2 = document.getElementById('graph_erorrs2');
+            new Chart(error_graph2, {
+                type: 'line',
+                data: {
+                    labels: x,
+                    datasets: [{
+                        label: 'Квадратичная ошибка',
+                        data: y1_driving_style_error,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(226, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }
+                ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const expenses3 = document.getElementById('erorrs3');
+            new Chart(expenses3, {
+                type: 'line',
+                data: {
+                    labels: x,
+                    datasets: [{
+                        label: 'Количество штрафов по спискам',
+                        data: y1_penalty,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(226, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }, {
+                        label: 'Количество штрафов по телематики',
+                        data: y2_penalty,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(50, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }
+                ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const error_graph3 = document.getElementById('graph_erorrs3');
+            new Chart(error_graph3, {
+                type: 'line',
+                data: {
+                    labels: x,
+                    datasets: [{
+                        label: 'Квадратичная ошибка',
+                        data: y1_penalty,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(226, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }
+                ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        
+        var labels1 = {{ labels_mileage_deviation_score | tojson }};
+        var values1 = {{ values_mileage_deviation_score | tojson }};
+
+        // Создаем массив объектов для сортировки
+        var data = labels1.map((label, index) => ({
+            label: label,
+            value: values1[index]
+        }));
+
+        // Сортируем данные по значению, перемещая NaN в конец
+        data.sort((a, b) => {
+            if (isNaN(a.value) && isNaN(b.value)) {
+                return 0;
+            } else if (isNaN(a.value)) {
+                return 1;
+            } else if (isNaN(b.value)) {
+                return -1;
+            } else {
+                return b.value - a.value;
+            }
+        });
+
+        // Разделяем данные обратно на массивы labels и values
+        labels1 = data.map(item => item.label);
+        values1 = data.map(item => item.value);
+        
+        for(let i = 0; i < labels1.length; i++) {
+            labels1[i] = labels1[i].slice(0, 20)
+        }
+
+        var ctx1 = document.getElementById('sub1_raiting');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: labels1,
+                datasets: [{
+                    label: 'Рейтинг полигонов по пробегу',
+                    data: values1,
+                    backgroundColor: 'rgba(226, 26, 26)',
+                    borderColor: 'rgba(226, 26, 26)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+
+        var labels2 = {{ labels_driving_style_score | tojson }};
+        var values2 = {{ values_driving_style_score | tojson }};
+
+
+
+        // Создаем массив объектов для сортировки
+        var data = labels2.map((label, index) => ({
+            label: label,
+            value: values2[index]
+        }));
+
+        // Сортируем данные по значению, перемещая NaN в конец
+        data.sort((a, b) => {
+            if (isNaN(a.value) && isNaN(b.value)) {
+                return 0;
+            } else if (isNaN(a.value)) {
+                return 1;
+            } else if (isNaN(b.value)) {
+                return -1;
+            } else {
+                return b.value - a.value;
+            }
+        });
+
+        // Разделяем данные обратно на массивы labels и values
+        labels2 = data.map(item => item.label);
+        values2 = data.map(item => item.value);
+
+        for(let i = 0; i < labels2.length; i++) {
+            labels2[i] = labels2[i].slice(0, 20)
+        }
+
+        var ctx2 = document.getElementById('sub2_raiting');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: labels2,
+                datasets: [{
+                    label: 'Рейтинг полигонов по стилю езды',
+                    data: values2,
+                    backgroundColor: 'rgba(226, 26, 26)',
+                    borderColor: 'rgba(226, 26, 26)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+
+        var labels3 = {{ labels_penalty_score | tojson }};
+        var values3 = {{ values_penalty_score | tojson }};
+
+        // Создаем массив объектов для сортировки
+        var data = labels3.map((label, index) => ({
+            label: label,
+            value: values3[index]
+        }));
+
+        // Сортируем данные по значению, перемещая NaN в конец
+        data.sort((a, b) => {
+            if (isNaN(a.value) && isNaN(b.value)) {
+                return 0;
+            } else if (isNaN(a.value)) {
+                return 1;
+            } else if (isNaN(b.value)) {
+                return -1;
+            } else {
+                return b.value - a.value;
+            }
+        });
+
+        // Разделяем данные обратно на массивы labels и values
+        labels3 = data.map(item => item.label);
+        values3 = data.map(item => item.value);
+
+        for(let i = 0; i < labels3.length; i++) {
+            labels3[i] = labels3[i].slice(0, 20)
+        }
+
+        var ctx3 = document.getElementById('sub3_raiting');
+        new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: labels3,
+                datasets: [{
+                    label: 'Рейтинг полигонов по штрафам',
+                    data: values3,
+                    backgroundColor: 'rgba(226, 26, 26)',
+                    borderColor: 'rgba(226, 26, 26)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+    </script>
+</body>
+</html>

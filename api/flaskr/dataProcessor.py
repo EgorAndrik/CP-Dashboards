@@ -1,12 +1,13 @@
 import io
 import pandas as pd
 import numpy as np
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 class RawDataPreprocessing:
     """
          Transform data representation from raw excel file to clear pandas DataFrame.
     """
-    def __init__(self, path_file: str | io.BufferedIOBase):
+    def __init__(self, path_file: str | io.BufferedIOBase) -> None:
         self.raw_data = pd.read_excel(path_file)
         self.part_data = self.process_raw_data(self.raw_data)
         self.data: pd.DataFrame = self.process_data(self.part_data)
@@ -16,7 +17,6 @@ class RawDataPreprocessing:
     
     def saveData(self, filepath):
         self.data.to_excel(filepath, index=False)
-
 
     @staticmethod
     def process_raw_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -91,20 +91,27 @@ class RawDataPreprocessing:
 
         df = df[['leader'] + list(df.drop(columns='leader').columns)]
 
+        df = df[~(df.date_list.isna() & df.date_telematics.isna() & (~df.leader))]
+
+
+        df['penalty'] = df['penalty'].fillna(1.)
+        df.loc[df['penalty'] == 0, 'penalty'] = 1.
+
         return df
+
 
 class DataPreprocessing:
     """
         Constructs various data representations and collects various statistics. 
     """
-    def __init__(self, data: pd.DataFrame):
+    def __init__(self, data: pd.DataFrame) -> None:
         """
             @param data Data comes as output of RawDataPreprocessing class. 
         """
         self.data = data
 
     @staticmethod 
-    def get_polygons_rate(df_group) -> pd.DataFrame:
+    def get_polygons_rate(df_group: pd.DataFrame) -> pd.DataFrame:
         """
             Rates massive structures such as polygons or subpolygons.
             @param df_group Data grouped by polygon of subpolygon. 
@@ -119,7 +126,6 @@ class DataPreprocessing:
         rate_polygons['driving_style_score'] = rate_polygons['driving_style'] / 6
 
         rate_polygons['penalty_score'] = 1 / (rate_polygons['penalty'] / rate_polygons['cnt'])
-
 
         return rate_polygons
 
@@ -169,13 +175,18 @@ class DataPreprocessing:
 
         return data_init_stract
 
-    def rate_by_subpolygons(self):
+    def rate_by_subpolygons(self, polygon=None) -> pd.DataFrame:
         """
             Rates subpolygons. 
+            If polygon is None score will be calculated over all polygons.
         """
         df = self.data
+
+        if polygon is not None:
+            df = df.set_index('polygon').loc[polygon].reset_index()
+
         rate_subpolygons_group = df[df.leader == True].groupby('subpolygon')
-        rate_subpolygons = self.get_polygons_rate(rate_subpolygons_group).drop(columns=['result_score'])
+        rate_subpolygons = self.get_polygons_rate(rate_subpolygons_group)
         data_init_stract = self.exchangeToSubpolygons(df)
 
         rate_subpolygons = rate_subpolygons.join(data_init_stract.rename(columns={'res': 'subpolygon_cars_deviation'})[['subpolygon_cars_deviation']])
@@ -186,12 +197,29 @@ class DataPreprocessing:
 
         rate_subpolygons['result_score'] = rate_subpolygons['mileage_deviation_score'] * 0.4 + rate_subpolygons['subpolygon_cars_score'] * 0.3 + rate_subpolygons['penalty_score'] * 0.15 + rate_subpolygons['driving_style_score'] * 0.15
 
+        rate_subpolygons = rate_subpolygons.reset_index()
         return rate_subpolygons
+    
+    def get_polyg(self, polyg_name: str)->dict:
+        """
+            Returns polygon structure 
+        """
+        telematics_leaked_work, telematics_leaked_broken = self.telematics_leaked_stats(polyg_name)
+        list_leaked_views = self.car_list_leaked_state(polyg_name)
 
+        structure = {
+            'polygonName': polyg_name,
+            'subpolygons': self.data.set_index('polygon').loc[polyg_name]['subpolygon'].drop_duplicates().tolist(),
+            'subpolygonsRating': self.rate_by_subpolygons(polyg_name).set_index('subpolygon').reset_index(),
+            'notifications_telematics_leaked_work':  telematics_leaked_work.transpose().to_dict(),
+            'notifications_telematics_leaked_broken':  telematics_leaked_broken.transpose().to_dict(),
+            'list_leaked_views': list_leaked_views.transpose().to_dict(),
+        }
 
+        return structure
 
     @staticmethod
-    def collect_groups_by_date(df: pd.DataFrame):
+    def collect_groups_by_date(df: pd.DataFrame) -> pd.DataFrame:
         """
             Collects data for polygons by dates. 
         """
@@ -219,7 +247,117 @@ class DataPreprocessing:
 
         return poldate_data
 
+    def telematics_leaked_stats(self, polyg_name = None):
+        """
+            Allows to collect data about abnormals in telematics data (when telematics is None).
+            This data allows do determine whether the telematics device is not used or the driver has
+            not completed the quest. 
+
+            @return has_telematics, no_telematics. Has telematics dataframe corresponds for drivers
+            that had had the telematics device but the it was broken or the driver did not complain
+            the quest.
+        """
+        df = self.data
+
+        if polyg_name is not None:
+            df = df.set_index('polygon').loc[polyg_name].reset_index()
+
+        # Если в списках дата есть, а в телематике нет - либо сломана телематика, либо никто не поехал на задание
+        telematics_leak_state = (df.leader == False) & (df.date_telematics.isna())
+        telematics_unleak_state = (df.leader == False) & (~df.date_telematics.isna())
+        telematics_leak = df[telematics_leak_state]
+        telematics_unleak = df[telematics_unleak_state]
 
 
+        telematics_leak_group = telematics_leak[['subpolygon', 'id', 'leader', 'penalty']].groupby(['subpolygon', 'id'])
+        telematics_leak_idxs = telematics_leak_group[['leader']].count().rename(columns={'leader': 'count'})
+        telematics_leak_idxs = telematics_leak_idxs.join(telematics_leak_group[['penalty']].sum())
 
-    
+        telematics_unleak_group = telematics_unleak[['subpolygon', 'id', 'leader', 'penalty']].groupby(['subpolygon', 'id'])
+        telematics_unleak_idxs = telematics_unleak_group[['leader']].count().rename(columns={'leader': 'count'})
+        telematics_unleak_idxs = telematics_unleak_idxs.join(telematics_unleak_group[['penalty']].sum())
+
+        has_telematics_idxs = np.intersect1d(telematics_leak_idxs.index, telematics_unleak_idxs.index)
+        has_telematics = telematics_leak_idxs.loc[has_telematics_idxs].join(telematics_unleak_idxs.loc[has_telematics_idxs], lsuffix='_leaked', rsuffix='_fixed')
+        no_telematics = telematics_leak_idxs[~telematics_leak_idxs.index.isin(has_telematics_idxs)]
+
+
+        adf = df[~df.leader].set_index(['subpolygon', 'id']).loc[has_telematics_idxs].reset_index()
+        adf_max_teledate = adf[~adf.date_telematics.isna()].groupby(['subpolygon', 'id'])[['date_list']].max().rename(columns={'date_list': 'max_teledate'})
+        adf_min_nateledate = adf[adf.date_telematics.isna()].groupby(['subpolygon', 'id'])[['date_list']].min().rename(columns={'date_list': 'min_nateledate'})
+
+        adf_teledate = adf_max_teledate.join(adf_min_nateledate)
+
+
+        adf_teledate['probably_broken'] = adf_teledate['max_teledate'] <= adf_teledate['min_nateledate']
+        has_telematics = has_telematics.join(adf_teledate)
+        has_telematics['penalty_leaked'] -= has_telematics['count_leaked']
+        has_telematics['penalty_fixed'] -= has_telematics['count_fixed']
+
+        has_telematics['importance_score'] = has_telematics['count_leaked'] + has_telematics['penalty_leaked']*4 + (~has_telematics['probably_broken']) * 50
+        has_telematics = has_telematics.sort_values('importance_score', ascending=False)
+
+        no_telematics = no_telematics.sort_values('count', ascending=False)
+        no_telematics['count'] = no_telematics['count'].astype(np.int32)
+
+        return has_telematics, no_telematics
+
+    def car_list_leaked_state(self, polyg_name=None):
+        """
+            Allows to collect statistics about abnormals in list data corresponding to telematics data.
+            When this situation occures the cars lists has been lost or the driver has used the car
+            without the quest (in self interests).
+        """
+        df = self.data
+
+        if polyg_name is not None:
+            df = df.set_index('polygon').loc[polyg_name].reset_index()
+
+
+        # Если данные есть в телематике, но нет в листе, водитель использовал машину в своих интересах или списки были утеряны.
+        list_leak_state = (df.leader == False) & (df['date_list'].isna())
+
+        list_leak = df[list_leak_state]
+        list_leak_group = list_leak.groupby(['subpolygon', 'id'])
+
+        list_leak_view = list_leak_group[['leader']].count().rename(columns={'leader': 'count'})
+        list_leak_view = list_leak_view.join(list_leak_group[['mileage_telematics', 'penalty']].sum())
+
+        list_leak_view = list_leak_view.sort_values('mileage_telematics', ascending=False)
+
+        return list_leak_view
+
+    @staticmethod
+    def get_pred_model(df: pd.DataFrame) -> pd.DataFrame:
+        model = df.groupby('date_list')
+        sr_res = model['mileage_telematics'].mean() / model['mileage_list'].mean()
+
+        # Создаем новый столбец 'sr_res' в DataFrame
+        df['sr_res'] = df['date_list'].map(sr_res)
+
+        model_data = pd.DataFrame({'date_list': df['date_list'], 'sr_res': df['date_list'].map(sr_res)})
+
+        sorted_df= model_data.dropna(subset=['date_list', 'sr_res'])
+        sorted_df = sorted_df.sort_values(by='date_list')
+
+        sorted_df['date_list'] = pd.to_datetime(sorted_df['date_list'])
+        condition = sorted_df['date_list'].dt.year == 2019
+
+        filtered_df = sorted_df[~condition]
+        filtered_df = filtered_df.drop_duplicates(subset=['date_list'])
+        filtered_df.reset_index(drop=True, inplace=True)
+
+        model = SARIMAX(filtered_df['sr_res'], order=(3, 1, 1), seasonal_order=(1, 1, 1, 12)) 
+        model_fit = model.fit()
+
+        forecast = model_fit.forecast(steps=31) 
+
+        start_date = '2024-05-02'
+        end_date = pd.to_datetime(start_date) + pd.DateOffset(days=30)
+        date_range = pd.date_range(start=start_date, end=end_date, freq='D')
+        model_pred = {'date_list': date_range, 'sr_res': forecast}
+        model_pred = pd.DataFrame(model_pred)
+        result = pd.concat([filtered_df, model_pred])
+        result.reset_index(drop=True, inplace=True)
+
+        return result
