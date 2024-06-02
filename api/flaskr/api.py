@@ -65,6 +65,7 @@ def dop_rating():
         dp = DataPreprocessing(rdp.getData())
     return render_template(
         'dop_rating.html',
+        labels_polyg=dp.rate_by_polygons()['polygon'].tolist(),
         labels_mileage_deviation_score=dp.rate_by_polygons()['polygon'].tolist(),
         values_mileage_deviation_score=dp.rate_by_polygons()['mileage_deviation_score'].tolist(),
 
