@@ -86,12 +86,15 @@ def rating():
 
     telematics_leaked_work, telematics_leaked_broken = dp.telematics_leaked_stats()
     list_leaked_views = dp.car_list_leaked_state()
+    result = dp.get_pred_model(rdp.getData())
 
     return render_template(
         'rating.html',
         notifications_telematics_leaked_work = telematics_leaked_work.transpose().to_dict(),
         notifications_telematics_leaked_broken = telematics_leaked_broken.transpose().to_dict(),
         list_leaked_views = list_leaked_views.transpose().to_dict(),
+
+        x=result['date_list'].tolist(), y=result['sr_res'].tolist(),
 
         labels_polyg=dp.rate_by_polygons()['polygon'].tolist(),
         values_polyg=dp.rate_by_polygons()['result_score'].tolist(),
