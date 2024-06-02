@@ -97,10 +97,10 @@ def rating():
 
         x=result['date_list'].tolist(), y=result['sr_res'].tolist(),
 
-        labels_polyg=dp.rate_by_polygons()['polygon'].tolist(),
-        values_polyg=dp.rate_by_polygons()['result_score'].tolist(),
-        labels_subpolygons=dp.rate_by_subpolygons()['subpolygon'].tolist(),
-        values_subpolygons=dp.rate_by_subpolygons()['result_score'].tolist(),
+        labels_polyg=dp.rate_by_polygons().sort_values('result_score', ascending=False)['polygon'].tolist(),
+        values_polyg=dp.rate_by_polygons().sort_values('result_score', ascending=False)['result_score'].tolist(),
+        labels_subpolygons=dp.rate_by_subpolygons().sort_values('result_score', ascending=False)['subpolygon'].tolist(),
+        values_subpolygons=dp.rate_by_subpolygons().sort_values('result_score', ascending=False)['result_score'].tolist(),
         )
 
 @application.route('/byPolygons', methods=['GET'])
