@@ -281,4 +281,30 @@
 
 #announcements {
     padding: 20px;
+    font-size: 20px;
+}
+
+
+.waring_info {
+    display: flex;
+    font-size: 25px;
+    padding: 30px;
+    font-family: "Ubuntu", sans-serif;
+    color: #820d0d; 
+}
+
+.click_notif {
+    /* width: 200px; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left:25px;
+    height: 20px;
+    border-radius: 20px;
+    font-size: 20px;
+    padding: 30px;
+    background-color: #e3dcdc;
+    border: none;
+    color: #820d0d;
+    cursor: pointer;
 }
