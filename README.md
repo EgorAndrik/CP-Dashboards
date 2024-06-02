@@ -1,5 +1,6 @@
 # CP-Dashboards
 
+[![Code Size](https://img.shields.io/github/languages/code-size/NSO-Clio/CP-Dashboards)](https://github.com/NSO-Clio/CP-Dashboards)
 <img alt="python" src="https://img.shields.io/badge/python-3.10-yellow.svg"/>
 
 Разработанно командой Clio
