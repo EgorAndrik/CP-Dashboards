@@ -235,10 +235,31 @@
     padding: 20px;
 }
 
+
 .dop_raiting_bars {
     display: flex;
     flex-direction: row;
+    width: 1000px;
 }
+.error_container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.error_bars {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin: 30px 200px 0px ;
+
+}
+
+.error_bars h1 {
+    display: flex;
+    justify-content: center;
+}
+
 
 .texts {
     display: flex;

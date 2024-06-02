@@ -44,8 +44,28 @@
                         <canvas id="sub3_raiting" width="120" height="120"></canvas>
                     </div>
                 </div>
-            </div>
+            </div>  
 
+        </div>
+        <div class="error_bars">
+            <h1>Отклонения данных</h1>
+                <!-- Вторая строка графиков -->
+                <div class="error_container">
+                    <div class="chart-container">
+                        <canvas id="erorrs1" width="120" height="120"></canvas>
+                        <canvas id="graph_erorrs1" width="120" height="120"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="erorrs2" width="120" height="120"></canvas>
+                        <canvas id="graph_erorrs2" width="120" height="120"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="erorrs3" width="120" height="120"></canvas>
+                        <canvas id="graph_erorrs3" width="120" height="120"></canvas>
+                    </div>
+                </div>
+            </div>  
+            
         </div>
         <h2>Внимание! В процессе анализа обнаружены следующие недочёты:</h2>
 
@@ -117,6 +137,192 @@
         announcementsButton.onclick = function() {
             document.getElementById('announcements').classList.toggle('hidden')
         }
+
+        // data
+
+        var x = {{ deviation_graphs_targets | tojson}}
+        var y1_milege = {{ deviation_graphs_mileage_list_list | tojson}}
+        var y2_milege = {{ deviation_graphs_mileage_telematics_list | tojson}}
+
+        var y1_list = {{ deviation_graphs_driving_style_list | tojson}}
+        var y2_list = {{ deviation_graphs_driving_style_telematics | tojson}}
+
+        var y1_penalty= {{ deviation_graphs_penalty_list | tojson}}
+        var y2_penalty = {{ deviation_graphs_penalty_telematics | tojson}}
+
+        // errors
+
+        var y1_milleage_error = {{ deviation_graphs_mileage_error_list | tojson}}
+
+        var y1_driving_style_error = {{ deviation_graphs_driving_style_error | tojson}}
+
+        var y1_penalty = {{ deviation_graphs_penalty_error | tojson}} 
+
+
+        const expenses1 = document.getElementById('erorrs1');
+            new Chart(expenses1, {
+                type: 'line',
+                data: {
+                    labels: x,
+                    datasets: [{
+                        label: 'Пробег по спискам',
+                        data: y1_milege,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(226, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }, {
+                        label: 'Пробег по телематики',
+                        data: y2_milege,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(50, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }
+                ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const error_graph1 = document.getElementById('graph_erorrs1');
+            new Chart(error_graph1, {
+                type: 'line',
+                data: {
+                    labels: x,
+                    datasets: [{
+                        label: 'Квадратичная ошибка',
+                        data: y1_milleage_error,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(226, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }
+                ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const expenses2 = document.getElementById('erorrs2');
+            new Chart(expenses2, {
+                type: 'line',
+                data: {
+                    labels: x,
+                    datasets: [{
+                        label: 'Манера вождения по спискам',
+                        data: y1_list,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(226, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }, {
+                        label: 'Манера вождения по телематики',
+                        data: y2_list,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(50, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }
+                ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const error_graph2 = document.getElementById('graph_erorrs2');
+            new Chart(error_graph2, {
+                type: 'line',
+                data: {
+                    labels: x,
+                    datasets: [{
+                        label: 'Квадратичная ошибка',
+                        data: y1_driving_style_error,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(226, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }
+                ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const expenses3 = document.getElementById('erorrs3');
+            new Chart(expenses3, {
+                type: 'line',
+                data: {
+                    labels: x,
+                    datasets: [{
+                        label: 'Количество штрафов по спискам',
+                        data: y1_penalty,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(226, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }, {
+                        label: 'Количество штрафов по телематики',
+                        data: y2_penalty,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(50, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }
+                ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const error_graph3 = document.getElementById('graph_erorrs3');
+            new Chart(error_graph3, {
+                type: 'line',
+                data: {
+                    labels: x,
+                    datasets: [{
+                        label: 'Квадратичная ошибка',
+                        data: y1_penalty,
+                        borderWidth: 1, 
+                        backgroundColor: 'rgba(226, 80, 26)',
+                        borderColor: 'rgba(100, 26, 26)',
+
+                    }
+                ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
 
         var labels1 = {{ labels_mileage_deviation_score | tojson }};
         var values1 = {{ values_mileage_deviation_score | tojson }};
