@@ -28,14 +28,20 @@
                     <div class="chart-container">
                         <canvas id="main_raiting" width="160" height="160"></canvas>
                     </div>
+                    <div class="pred_chart">
+                        <canvas id="pred_chart" width="160" height="160"></canvas>
+                    </div>
                     <div class="chart-container">
                         <canvas id="sub_raiting" width="160" height="160"></canvas>
                     </div>
-                    <div class="chart-container">
-                        <canvas id="pie_chart" width="160" height="160"></canvas>
-                    </div>
                 </div>
             </div>
+
+        </div>
+
+        <div class="texts">
+            <p class="p_texts">Следует обратить внимание на полигоны с худшим рейтингом: {{ labels_polyg[-1] }}, {{ labels_polyg[-2] }}</p> 
+            <p class="p_texts">Следует обратить внимание на подразделения с худшим рейтингом: {{ labels_subpolygons[-1] }}, {{ labels_subpolygons[-2] }}, {{ labels_subpolygons[-3] }}</p> 
 
         </div>
 
@@ -131,8 +137,8 @@
                 datasets: [{
                     label: 'Рейтинг полигонов',
                     data: values,
-                    backgroundColor: 'rgba(75, 192, 192)',
-                    borderColor: 'rgba(75, 192, 192)',
+                    backgroundColor: 'rgba(226, 26, 26)',
+                    borderColor: 'rgba(226, 26, 26)',
                     borderWidth: 1
                 }]
             },
@@ -176,8 +182,8 @@
                 datasets: [{
                     label: 'Рейтинг структурных подразделений',
                     data: values2,
-                    backgroundColor: 'rgba(75, 192, 192)',
-                    borderColor: 'rgba(75, 192, 192)',
+                    backgroundColor: 'rgba(226, 26, 26)',
+                    borderColor: 'rgba(226, 26, 26)',
                     borderWidth: 1
                 }]
             },
@@ -192,44 +198,67 @@
             }
         });
 
-        // круговая
-        var pieLabels = ['Красный', 'Синий', 'Желтый', 'Зеленый', 'Фиолетовый'];
-        var pieData = [12, 19, 3, 5, 2];
+        // // круговая
+        // var pieLabels = ['Красный', 'Синий', 'Желтый', 'Зеленый', 'Фиолетовый'];
+        // var pieData = [12, 19, 3, 5, 2];
 
-        var ctx2 = document.getElementById('pie_chart').getContext('2d');
-        var pie_chart = new Chart(ctx2, {
-            type: 'doughnut',
+        // var ctx2 = document.getElementById('pie_chart').getContext('2d');
+        // var pie_chart = new Chart(ctx2, {
+        //     type: 'doughnut',
+        //     data: {
+        //         labels: pieLabels,
+        //         datasets: [{
+        //             label: 'Количество транспорта по каждому полигону',
+        //             data: pieData,
+        //             backgroundColor: [
+        //                 'rgba(255, 99, 132)',
+        //                 'rgba(54, 162, 235)',
+        //                 'rgba(255, 206, 86)',
+        //                 'rgba(75, 192, 192)',
+        //                 'rgba(153, 102, 255)'
+        //             ],
+        //             borderColor: [
+        //                 'rgba(255, 99, 132)',
+        //                 'rgba(54, 162, 235)',
+        //                 'rgba(255, 206, 86)',
+        //                 'rgba(75, 192, 192)',
+        //                 'rgba(153, 102, 255)'
+        //             ],
+        //             borderWidth: 1
+        //         }]
+        //     },
+        //     options: {
+        //         responsive: true,
+        //         maintainAspectRatio: false,
+        //         plugins: {
+        //             legend: {
+        //                 position: 'top',
+        //             },
+        //             tooltip: {
+        //                 enabled: true
+        //             }
+        //         }
+        //     }
+        // });
+        
+        // Предсказания
+        const expenses = document.getElementById('pred_chart');
+        new Chart(expenses, {
+            type: 'line',
             data: {
-                labels: pieLabels,
+                labels: {{ x | tojson }},
                 datasets: [{
-                    label: 'Количество транспорта по каждому полигону',
-                    data: pieData,
-                    backgroundColor: [
-                        'rgba(255, 99, 132)',
-                        'rgba(54, 162, 235)',
-                        'rgba(255, 206, 86)',
-                        'rgba(75, 192, 192)',
-                        'rgba(153, 102, 255)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132)',
-                        'rgba(54, 162, 235)',
-                        'rgba(255, 206, 86)',
-                        'rgba(75, 192, 192)',
-                        'rgba(153, 102, 255)'
-                    ],
-                    borderWidth: 1
+                    label: 'Предсказания модели машинного обучения по предсказанию общей работы на ближайший месяц',
+                    data: {{ y | tojson }},
+                    borderWidth: 1, 
+                    backgroundColor: 'rgba(226, 80, 26)',
+                    borderColor: 'rgba(100, 26, 26)',
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        enabled: true
+                scales: {
+                    y: {
+                        beginAtZero: true
                     }
                 }
             }

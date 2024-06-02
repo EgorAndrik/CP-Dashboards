@@ -1,6 +1,7 @@
 import io
 import pandas as pd
 import numpy as np
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 class RawDataPreprocessing:
     """
@@ -326,3 +327,39 @@ class DataPreprocessing:
         list_leak_view = list_leak_view.sort_values('mileage_telematics', ascending=False)
 
         return list_leak_view
+
+    @staticmethod
+    def get_pred_model(df: pd.DataFrame) -> pd.DataFrame:
+        model = df.groupby('date_list')
+        sr_res = model['mileage_telematics'].mean() / model['mileage_list'].mean()
+
+        # Создаем новый столбец 'sr_res' в DataFrame
+        df['sr_res'] = df['date_list'].map(sr_res)
+
+        model_data = pd.DataFrame({'date_list': df['date_list'], 'sr_res': df['date_list'].map(sr_res)})
+
+        sorted_df= model_data.dropna(subset=['date_list', 'sr_res'])
+        sorted_df = sorted_df.sort_values(by='date_list')
+
+        sorted_df['date_list'] = pd.to_datetime(sorted_df['date_list'])
+        condition = sorted_df['date_list'].dt.year == 2019
+
+        filtered_df = sorted_df[~condition]
+        filtered_df = filtered_df.drop_duplicates(subset=['date_list'])
+        filtered_df.reset_index(drop=True, inplace=True)
+
+        model = SARIMAX(filtered_df['sr_res'], order=(3, 1, 1), seasonal_order=(1, 1, 1, 12)) 
+        model_fit = model.fit()
+
+        forecast = model_fit.forecast(steps=31) 
+
+        start_date = '2024-05-02'
+        end_date = pd.to_datetime(start_date) + pd.DateOffset(days=30)
+        date_range = pd.date_range(start=start_date, end=end_date, freq='D')
+        model_pred = {'date_list': date_range, 'sr_res': forecast}
+        model_pred = pd.DataFrame(model_pred)
+        result = pd.concat([filtered_df, model_pred])
+        result.reset_index(drop=True, inplace=True)
+
+        return result
+
