@@ -126,7 +126,18 @@ def getByPolygons():
                            labels_mileage_deviation_score=dp.get_polyg(polygonName)['subpolygonsRating']['subpolygon'].tolist(),
                            values_mileage_deviation_score=dp.get_polyg(polygonName)['subpolygonsRating']['mileage_deviation_score'].tolist(),
 
-                           deviation_graphs = agg_1
+                           deviation_graphs_targets = agg_1.index.tolist(),
+                           deviation_graphs_mileage_list_list = agg_1['mileage_list_list'].tolist(),
+                           deviation_graphs_mileage_telematics_list = agg_1['mileage_telematics_list'].tolist(),
+                           deviation_graphs_driving_style_list = agg_1['driving_style_list'].tolist(),
+                           deviation_graphs_driving_style_telematics = agg_1['driving_style_telematics'].tolist(),
+                           deviation_graphs_penalty_list = agg_1['penalty_list'].tolist(),
+                           deviation_graphs_penalty_telematics = agg_1['penalty_telematics'].tolist(),
+                           
+                           deviation_graphs_penalty_error = agg_1['penalty_error'].tolist(),
+                           deviation_graphs_driving_style_error = agg_1['driving_style_error'].tolist(),
+                           deviation_graphs_mileage_error_list = agg_1['mileage_error_list'].tolist(),
+                           deviation_graphs_mileage_error_telematics = agg_1['mileage_error_telematics'].tolist(),
                            )
 
 

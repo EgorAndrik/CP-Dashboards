@@ -252,3 +252,11 @@
 .p_texts {
     margin: 10px;
 }
+
+.hidden {
+    display: none;
+}
+
+#announcements {
+    padding: 20px;
+}
