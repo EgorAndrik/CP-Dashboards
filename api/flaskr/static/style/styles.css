@@ -4,6 +4,14 @@
     padding: 0;
 }
 
+html, body {
+    height: 100%;
+    width: 100%;
+}
+body {
+    display: flex;
+    flex-direction: column;
+}
 
 .index_background {
     position: relative;
@@ -46,6 +54,7 @@
 
 .content {
     display: flex;
+    flex: 1 0 auto;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -56,17 +65,21 @@
     font-size: 30px;
 }
 
+footer {
+    flex-shrink: 0;
+}
 .footer_h {
+
     background-color: #292525;
     font-family: "Ubuntu", sans-serif;
     padding: 10px;
     color: aliceblue;
     display: flex;
+    flex: 1 0 auto;
     flex-direction: row;
     justify-content: center;
     width: 100%;
     height: 80px;
-    margin-top: 140px;
 }
 
 .form {
